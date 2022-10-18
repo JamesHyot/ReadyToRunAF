@@ -1,0 +1,30 @@
+pool: Build
+name: Deploy ReadyToRun AF
+trigger: none
+
+steps:
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'publish'
+    publishWebProjects: false
+    projects: 'ReadyToRun.csproj'
+    arguments: '-c Release'
+- task: AzureAppServiceManage@0
+  inputs:
+    azureSubscription: 'AzureDevOps Principal - Projet'
+    Action: Stop Azure App Service
+    WebAppName: 'readytorun-af'
+- task: AzureRmWebAppDeployment@4
+  inputs:
+    ConnectionType: 'AzureRM'
+    azureSubscription: 'AzureDevOps Principal - Projet'
+    appType: 'functionApp'
+    WebAppName: 'readytorun-af'
+    packageForLinux: '$(System.DefaultWorkingDirectory)/**/publish.zip'
+    enableCustomDeployment: true
+    DeploymentType: runFromZip
+- task: AzureAppServiceManage@0
+  inputs:
+    azureSubscription: 'AzureDevOps Principal - Projet'
+    Action: Start Azure App Service
+    WebAppName: 'readytorun-af'
